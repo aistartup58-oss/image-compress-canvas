@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Image compress demo</title>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:40px auto;padding:0 16px}input,button{font:inherit;margin:6px 0}#msg{margin-top:12px}</style>
+</head>
+<body>
+<h1>Compress an image to a target size</h1>
+<p>Runs fully in your browser. Nothing is uploaded.</p>
+<input type="file" id="file" accept="image/jpeg,image/png,image/webp"><br>
+<label>Target size (KB) <input type="number" id="kb" value="50" min="5"></label>
+<div id="msg"></div>
+<script type="module">
+import { compressTo } from './compress.js';
+const file = document.getElementById('file'), kb = document.getElementById('kb'), msg = document.getElementById('msg');
+file.addEventListener('change', async () => {
+  const f = file.files[0]; if (!f) return;
+  msg.textContent = 'Compressing…';
+  const img = new Image();
+  img.onload = async () => {
+    const r = await compressTo(img, kb.value * 1024);
+    if (!r) { msg.textContent = 'Could not reach that size. Try a larger target.'; return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(r.blob); a.download = 'compressed-' + kb.value + 'kb.jpg';
+    a.textContent = 'Download (' + Math.round(r.blob.size / 1024) + ' KB, ' + r.width + '×' + r.height + ')';
+    msg.textContent = ''; msg.appendChild(a);
+  };
+  img.src = URL.createObjectURL(f);
+});
+</script>
+</body>
+</html>
